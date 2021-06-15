@@ -29,16 +29,11 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -56,7 +51,8 @@ public class OldDrive extends OpMode {
     private DcMotor rightBackMotor = null;
     //private CRServo grabberCloseServo = null;
     //private CRServo grabberRotateServo = null;
-    //private DcMotor slideTiltMotor = null;
+    private DcMotor shooterTilt = null;
+    private DcMotor shooterFire = null;
     //private DcMotor slideTiltMotor2 = null;
     //private CRServo slideExtendServo = null;
     //private DcMotorSimple intakeLeftMotor = null;
@@ -95,24 +91,11 @@ public class OldDrive extends OpMode {
         leftBackMotor.setDirection(DcMotor.Direction.FORWARD);
         rightBackMotor.setDirection(DcMotor.Direction.REVERSE);
 
-        //Grabber servo
-        //grabberCloseServo = hardwareMap.get(CRServo.class, "grabberCloseServo");
-        //grabberRotateServo = hardwareMap.get(CRServo.class, "grabberRotateServo");
+        shooterTilt = hardwareMap.get(DcMotor.class, "shooterTilt");
+        shooterTilt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        shooterFire = hardwareMap.get(DcMotor.class, "shooterFire");
 
-        //slideExtendServo = hardwareMap.get(CRServo.class, "slideExtendServo");
-        /*
-        slideTiltMotor = hardwareMap.get(DcMotor.class, "slideTiltMotor");
-        slideTiltMotor2 = hardwareMap.get(DcMotor.class, "slideTiltMotor2");
-        slideTiltMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        slideTiltMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-         */
-
-        //intakeLeftMotor = hardwareMap.get(DcMotorSimple.class,"intakeLeftMotor");
-        //intakeRightMotor = hardwareMap.get(DcMotorSimple.class, "intakeRightMotor");
-        //intakeLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-
-        //clampServo = hardwareMap.get(CRServo.class, "clampServo");
 
         parameters.mode = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -168,53 +151,22 @@ public class OldDrive extends OpMode {
     @Override
     public void loop() {
 
-        double slideExtendPower = gamepad2.left_bumper ? 1 : - gamepad2.left_trigger;
-        //slideExtendServo.setPower(slideExtendPower);
-
+        /*
         double slideTiltPower = gamepad2.left_stick_y / 4;
 
         if (slideTiltPower == 0) {
             slideTiltPower = 0.05;
         }
-        //slideTiltMotor.setPower(slideTiltPower);
-        //slideTiltMotor2.setPower(slideTiltPower);
+        slideTiltMotor.setPower(slideTiltPower);
+        slideTiltMotor2.setPower(slideTiltPower);
+        */
 
+        double shooterTiltPower = (gamepad2.left_bumper ? 1 : -gamepad2.left_trigger) * 0.5;
+        shooterTilt.setPower(shooterTiltPower);
 
-        grabberRotatePower = (gamepad2.dpad_up ? 1 : 0) + (gamepad2.dpad_down ? -1 : 0);
-        grabberRotatePower = grabberRotatePower / 4;
-        //grabberRotateServo.setPower(-grabberRotatePower);
-
-        double clampServoPower = gamepad2.right_bumper ? 1 : -gamepad2.right_trigger;
-        //clampServo.setPower(clampServoPower);
-        double intakePower = (gamepad2.x ? 1 : 0) + (gamepad2.y ? -1 : 0);
-        //intakeLeftMotor.setPower(-intakePower);
-        //intakeRightMotor.setPower(-intakePower);
-
-
-        // Close grabber
+        // Fire up shooter
         if (gamepad2.a) {
-            //grabberCloseServo.setPower(-0.5);
-        }
-
-        // Open grabber
-        else if (gamepad2.b) {
-            Timer timer = new Timer();
-
-            timer.schedule(new TimerTask() {
-                @Override
-                public void run() {
-
-                    try {
-                        //grabberCloseServo.setPower(1);
-                        Thread.sleep(800);
-                        //grabberCloseServo.setPower(0);
-                    } catch (InterruptedException e) {
-
-                    }
-
-
-                }
-            }, 0);
+            shooterFire.setPower(1);
         }
 
         driveControl();
