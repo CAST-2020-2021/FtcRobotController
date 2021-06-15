@@ -166,7 +166,10 @@ public class OldDrive extends OpMode {
 
         // Fire up shooter
         if (gamepad2.a) {
-            shooterFire.setPower(1);
+            shooterFire.setPower(-1);
+        }
+        else {
+            shooterFire.setPower(0);
         }
 
         driveControl();
