@@ -8,13 +8,11 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 public class EdgeDetectPipeline extends OpenCvPipeline
 {
-    // Notice this is declared as an instance variable (and re-used), not a local variable
-    Mat grey = new Mat();
+    Mat edges = new Mat();
 
     @Override
     public Mat processFrame(Mat input)
     {
-        Mat edges = new Mat();
         Imgproc.Canny(input, edges, 100, 200);
         return edges;
     }

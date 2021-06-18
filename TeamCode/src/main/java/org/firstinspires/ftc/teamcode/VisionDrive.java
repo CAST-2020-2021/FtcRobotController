@@ -33,7 +33,7 @@ public class VisionDrive extends OpMode {
                 camera.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
                 camera.setViewportRenderer(OpenCvCamera.ViewportRenderer.GPU_ACCELERATED);
                 camera.startStreaming(320, 240, OpenCvCameraRotation.SIDEWAYS_LEFT);
-                camera.setPipeline(new EdgeDetectPipeline());
+                camera.setPipeline(new ColourFilterPipeline());
             }
         });
 
