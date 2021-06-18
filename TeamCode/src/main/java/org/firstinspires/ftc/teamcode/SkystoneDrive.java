@@ -22,18 +22,24 @@
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRIC    T LIABILITY,
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 package org.firstinspires.ftc.teamcode;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -41,25 +47,29 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
-@TeleOp(name = "ADVHOP_ARM", group = "Iterative Opmode")
-public class OldDrive extends OpMode {
+/*
+    Old OPMode from 2020/2021 Skystone Comp
+ */
+
+@TeleOp(name = "Skystone Comp", group = "Iterative Opmode")
+@Disabled
+public class SkystoneDrive extends OpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftFrontMotor = null;
     private DcMotor rightFrontMotor = null;
     private DcMotor leftBackMotor = null;
     private DcMotor rightBackMotor = null;
-    //private CRServo grabberCloseServo = null;
-    //private CRServo grabberRotateServo = null;
-    private DcMotor shooterTilt = null;
-    private DcMotor shooterFire = null;
-    //private DcMotor slideTiltMotor2 = null;
-    //private CRServo slideExtendServo = null;
-    //private DcMotorSimple intakeLeftMotor = null;
-    //private DcMotorSimple intakeRightMotor = null;
+    private CRServo grabberCloseServo = null;
+    private CRServo grabberRotateServo = null;
+    private DcMotor slideTiltMotor = null;
+    private DcMotor slideTiltMotor2 = null;
+    private CRServo slideExtendServo = null;
+    private DcMotorSimple intakeLeftMotor = null;
+    private DcMotorSimple intakeRightMotor = null;
     private BNO055IMU imu;
     private float turnSpeed = 0.5f;
-    //private PIDController pidDrive;
+    private PIDController pidDrive;
     private double globalAngle, basePower = .30, correction;
     private Orientation lastAngles = new Orientation();
     private boolean speedSwitch = false;
@@ -67,7 +77,7 @@ public class OldDrive extends OpMode {
     private boolean pidActive = false;
     private double frontLeftPower, frontRightPower, backLeftPower, backRightPower, max;
     private int numOfRotations;
-    //private CRServo clampServo = null;
+    private CRServo clampServo = null;
     double grabberRotatePower;
     /*
      * Code to run ONCE when the driver hits INIT
@@ -91,11 +101,24 @@ public class OldDrive extends OpMode {
         leftBackMotor.setDirection(DcMotor.Direction.FORWARD);
         rightBackMotor.setDirection(DcMotor.Direction.REVERSE);
 
-        shooterTilt = hardwareMap.get(DcMotor.class, "shooterTilt");
-        shooterTilt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooterFire = hardwareMap.get(DcMotor.class, "shooterFire");
+        //Grabber servo
+        grabberCloseServo = hardwareMap.get(CRServo.class, "grabberCloseServo");
+        grabberRotateServo = hardwareMap.get(CRServo.class, "grabberRotateServo");
 
+        slideExtendServo = hardwareMap.get(CRServo.class, "slideExtendServo");
+        /*
+        slideTiltMotor = hardwareMap.get(DcMotor.class, "slideTiltMotor");
+        slideTiltMotor2 = hardwareMap.get(DcMotor.class, "slideTiltMotor2");
+        slideTiltMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        slideTiltMotor2.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+         */
+
+        intakeLeftMotor = hardwareMap.get(DcMotorSimple.class,"intakeLeftMotor");
+        intakeRightMotor = hardwareMap.get(DcMotorSimple.class, "intakeRightMotor");
+        intakeLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        clampServo = hardwareMap.get(CRServo.class, "clampServo");
 
         parameters.mode = BNO055IMU.SensorMode.IMU;
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
@@ -106,13 +129,13 @@ public class OldDrive extends OpMode {
 
         // Set PID proportional value to produce non-zero correction value when robot veers off
         // straight line. P value controls how sensitive the correction is.
-        //pidDrive = new PIDController(.05, 0, 0);
+        pidDrive = new PIDController(.05, 0, 0);
 
         // Set up parameters for driving in a straight line.
-        //pidDrive.setSetpoint(0);
-        //pidDrive.setOutputRange(0, basePower);
-        //pidDrive.setInputRange(-90, 90);
-        //pidDrive.enable();
+        pidDrive.setSetpoint(0);
+        pidDrive.setOutputRange(0, basePower);
+        pidDrive.setInputRange(-90, 90);
+        pidDrive.enable();
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -138,10 +161,10 @@ public class OldDrive extends OpMode {
     @Override
     public void start() {
         // Set up parameters for driving in a straight line.
-        //pidDrive.setSetpoint(0);
-        //pidDrive.setOutputRange(0, basePower);
-        //pidDrive.setInputRange(-90, 90);
-        //pidDrive.enable();
+        pidDrive.setSetpoint(0);
+        pidDrive.setOutputRange(0, basePower);
+        pidDrive.setInputRange(-90, 90);
+        pidDrive.enable();
         runtime.reset();
     }
 
@@ -151,7 +174,9 @@ public class OldDrive extends OpMode {
     @Override
     public void loop() {
 
-        /*
+        double slideExtendPower = gamepad2.left_bumper ? 1 : - gamepad2.left_trigger;
+        slideExtendServo.setPower(slideExtendPower);
+
         double slideTiltPower = gamepad2.left_stick_y / 4;
 
         if (slideTiltPower == 0) {
@@ -159,17 +184,42 @@ public class OldDrive extends OpMode {
         }
         slideTiltMotor.setPower(slideTiltPower);
         slideTiltMotor2.setPower(slideTiltPower);
-        */
 
-        double shooterTiltPower = (gamepad2.left_bumper ? 1 : -gamepad2.left_trigger) * 0.5;
-        shooterTilt.setPower(shooterTiltPower);
+        grabberRotatePower = (gamepad2.dpad_up ? 1 : 0) + (gamepad2.dpad_down ? -1 : 0);
+        grabberRotatePower = grabberRotatePower / 4;
+        grabberRotateServo.setPower(-grabberRotatePower);
 
-        // Fire up shooter
+        double clampServoPower = gamepad2.right_bumper ? 1 : -gamepad2.right_trigger;
+        clampServo.setPower(clampServoPower);
+        double intakePower = (gamepad2.x ? 1 : 0) + (gamepad2.y ? -1 : 0);
+        intakeLeftMotor.setPower(-intakePower);
+        intakeRightMotor.setPower(-intakePower);
+
+
+        // Close grabber
         if (gamepad2.a) {
-            shooterFire.setPower(-1);
+            grabberCloseServo.setPower(-0.5);
         }
-        else {
-            shooterFire.setPower(0);
+
+        // Open grabber
+        else if (gamepad2.b) {
+            Timer timer = new Timer();
+
+            timer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+
+                    try {
+                        grabberCloseServo.setPower(1);
+                        Thread.sleep(800);
+                        grabberCloseServo.setPower(0);
+                    } catch (InterruptedException e) {
+
+                    }
+
+
+                }
+            }, 0);
         }
 
         driveControl();
@@ -187,7 +237,6 @@ public class OldDrive extends OpMode {
         frontRightPower = y + x;
         backLeftPower = y + x;
         backRightPower = y + -x;
-
 
         if (gamepad1.left_bumper) {
             turning = true;
@@ -212,10 +261,10 @@ public class OldDrive extends OpMode {
 
         if (!turning) {
             // Use PID with imu input to drive in a straight line.
-            //correction = pidDrive.performPID(getAngle());
+            correction = pidDrive.performPID(getAngle());
         }
         else{
-            //correction = 0;
+            correction = 0;
         }
 
         // Speed controls
@@ -271,6 +320,7 @@ public class OldDrive extends OpMode {
             backRightPower = backRightPower / basePower;
             frontLeftPower = frontLeftPower / basePower;
             frontRightPower = frontRightPower / basePower;
+
         }
 
         leftFrontMotor.setPower(-(frontLeftPower + correction));
