@@ -9,7 +9,6 @@ import org.firstinspires.ftc.teamcode.holonomicdrive.HoloXDrive;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvInternalCamera2;
 import org.firstinspires.ftc.teamcode.opencv.*;
 
@@ -19,21 +18,24 @@ public class VisionDrive extends OpMode {
 
     private HoloXDrive drive;
     private OpenCvCamera camera;
+    private ConfigurablePipeline configurablePipeline;
+
+    private boolean dpadHold = false;
 
     @Override
     public void init() {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK, cameraMonitorViewId);
 
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
+        configurablePipeline = new ConfigurablePipeline(new ColourFilterPipeline());
+
+        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
-            public void onOpened()
-            {
+            public void onOpened() {
                 camera.setViewportRenderingPolicy(OpenCvCamera.ViewportRenderingPolicy.OPTIMIZE_VIEW);
                 camera.setViewportRenderer(OpenCvCamera.ViewportRenderer.GPU_ACCELERATED);
                 camera.startStreaming(320, 240, OpenCvCameraRotation.SIDEWAYS_LEFT);
-                camera.setPipeline(new ColourFilterPipeline());
+                camera.setPipeline(configurablePipeline.pipeline);
             }
         });
 
@@ -55,6 +57,28 @@ public class VisionDrive extends OpMode {
                 gamepad1.left_bumper,
                 gamepad1.right_bumper
         );
+
+
+        if (gamepad2.dpad_down) {
+            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() - 1);
+        }
+        if (gamepad2.dpad_up) {
+            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() + 1);
+        }
+        if (gamepad2.dpad_left) {
+            if (!dpadHold) {
+                configurablePipeline.StepBackwards();
+                dpadHold = true;
+            }
+        } else if (gamepad2.dpad_right) {
+            if (!dpadHold) {
+                configurablePipeline.StepForwards();
+                dpadHold = true;
+            }
+        } else {
+            dpadHold = false;
+        }
+        telemetry.addData("opencv", configurablePipeline);
         telemetry.update();
     }
 }
