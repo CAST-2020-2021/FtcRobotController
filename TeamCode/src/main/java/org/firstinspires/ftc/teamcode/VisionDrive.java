@@ -32,7 +32,7 @@ public class VisionDrive extends OpMode {
 
 
         try {
-            configurablePipeline = new ConfigurablePipeline(new ColourFilterPipeline());
+            configurablePipeline = new ConfigurablePipeline(new ColourCountourPipeline());
         } catch (Exception e) {
             throw new RuntimeException((e.getMessage() != null) ? e.getMessage() : "Could not set configuration value.");
         }

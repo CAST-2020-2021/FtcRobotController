@@ -5,6 +5,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
 
@@ -43,7 +44,10 @@ public class ColourCountourPipeline extends OpenCvPipeline {
     {
         // Filter
         Imgproc.cvtColor(input, hsv, Imgproc.COLOR_RGB2HSV);
-        Core.inRange(hsv, new Scalar(minHue, 27, 15), new Scalar(maxHue, 100, 100), mask);
+        Core.inRange(hsv, new Scalar(minHue, 0, 0), new Scalar(maxHue, 255, 255), mask);
+        Imgproc.morphologyEx(mask,mask,Imgproc.MORPH_OPEN,Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,new Size(3,3)));
+        Imgproc.morphologyEx(mask,mask,Imgproc.MORPH_CLOSE,Imgproc.getStructuringElement(Imgproc.MORPH_ELLIPSE,new Size(9,9)));
+
         colourMask.release();
         colourMask = new Mat();
         Core.bitwise_and(input, input, colourMask, mask);
@@ -71,6 +75,7 @@ public class ColourCountourPipeline extends OpenCvPipeline {
 
         Imgproc.drawContours(input, approxList,-1 ,new Scalar(255,255,255),3);
 
+        Core.addWeighted(input,0.8, colourMask,0.2,0, input);
         return input;
     }
 }
