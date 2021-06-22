@@ -1,17 +1,23 @@
 package org.firstinspires.ftc.teamcode.opencv;
 
+import android.util.Log;
+
 import org.firstinspires.ftc.teamcode.lib.CircularLinkedList;
 import org.firstinspires.ftc.teamcode.lib.Node;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+import java.lang.annotation.AnnotationTypeMismatchException;
 import java.lang.reflect.Field;
+import java.util.Objects;
 
 public class ConfigurablePipeline {
     public OpenCvPipeline pipeline;
-    private boolean configurable;
+    private final boolean configurable;
     CircularLinkedList<Field> configurableElementsMap = new CircularLinkedList<>();
+    private final String TAG = "ConfigurablePipeline";
 
-    public ConfigurablePipeline(OpenCvPipeline pipeline) {
+    public ConfigurablePipeline(OpenCvPipeline pipeline) throws Exception {
+
         this.pipeline = pipeline;
 
         Class<?> clazz = pipeline.getClass();
@@ -22,7 +28,9 @@ public class ConfigurablePipeline {
                 field.setAccessible(true);
                 if (field.isAnnotationPresent(ConfigurableElement.class)) {
                     configurableElementsMap.addNode(field);
-
+                    if (field.getType() != Double.class) {
+                        throw new Exception("Configurable type not a double.");
+                    }
                 }
             }
         }
@@ -53,7 +61,7 @@ public class ConfigurablePipeline {
         try {
             this.configurableElementsMap.GetHead().value.set(this.pipeline, value);
         } catch (Exception e) {
-            int a = 1;
+            Log.e(TAG,(e.getMessage() != null) ? e.getMessage() : "Could not set configuration value.");
         }
 
     }
@@ -66,7 +74,7 @@ public class ConfigurablePipeline {
         try {
             return this.configurableElementsMap.GetHead().value.getDouble(this.pipeline);
         } catch (Exception e) {
-            int a = 1;
+            Log.e(TAG,(e.getMessage() != null) ? e.getMessage() : "Could not get configuration value.");
         }
 
         return -1;
@@ -80,16 +88,13 @@ public class ConfigurablePipeline {
 
         do {
             try {
-
                 currentNode = currentNode.nextNode;
                 output.append(currentNode.value.getName()).append(": ").append(currentNode.value.getDouble(pipeline));
             } catch (Exception e) {
-                int a = 1;
+                Log.wtf(TAG,e.getMessage());
             }
         } while (currentNode != configurableElementsMap.head);
         output.append("(*)");
         return output.toString();
     }
-
-
 }

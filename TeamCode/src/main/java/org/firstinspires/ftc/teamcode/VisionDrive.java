@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -19,6 +21,7 @@ public class VisionDrive extends OpMode {
     private HoloXDrive drive;
     private OpenCvCamera camera;
     private ConfigurablePipeline configurablePipeline;
+    private final String TAG = "VisionDrive";
 
     private boolean dpadHold = false;
 
@@ -27,7 +30,12 @@ public class VisionDrive extends OpMode {
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         camera = OpenCvCameraFactory.getInstance().createInternalCamera2(OpenCvInternalCamera2.CameraDirection.BACK, cameraMonitorViewId);
 
-        configurablePipeline = new ConfigurablePipeline(new ColourFilterPipeline());
+
+        try {
+            configurablePipeline = new ConfigurablePipeline(new ColourFilterPipeline());
+        } catch (Exception e) {
+            Log.e(TAG,(e.getMessage() != null) ? e.getMessage() : "Could not set configuration value.");
+        }
 
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
@@ -60,10 +68,10 @@ public class VisionDrive extends OpMode {
 
 
         if (gamepad2.dpad_down) {
-            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() - 1);
+            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() - 0.01);
         }
         if (gamepad2.dpad_up) {
-            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() + 1);
+            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() + 0.01);
         }
         if (gamepad2.dpad_left) {
             if (!dpadHold) {
@@ -78,7 +86,7 @@ public class VisionDrive extends OpMode {
         } else {
             dpadHold = false;
         }
-        telemetry.addData("opencv", configurablePipeline);
+        telemetry.addData("cv", configurablePipeline);
         telemetry.update();
     }
 }

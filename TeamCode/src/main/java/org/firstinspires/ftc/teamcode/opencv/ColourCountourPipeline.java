@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.opencv;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfFloat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Scalar;
@@ -11,10 +11,21 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.ArrayList;
 import java.util.List;
 
+@Configurable
+public class ColourCountourPipeline extends OpenCvPipeline {
 
-public class ContourPipeline extends OpenCvPipeline
-{
-    // Notice this is declared as an instance variable (and re-used), not a local variable
+    // Colour filter Declarations
+    Mat hsv = new Mat();
+    Mat mask = new Mat();
+    Mat colourMask = new Mat();
+
+    @ConfigurableElement
+    public double minHue = 70;
+
+    @ConfigurableElement
+    public double maxHue = 70;
+
+    // Contour Declarations
     Mat grey = new Mat();
     Mat limited = new Mat();
     Mat hierarchy = new Mat();
@@ -24,13 +35,22 @@ public class ContourPipeline extends OpenCvPipeline
 
     MatOfPoint2f approx = new MatOfPoint2f();
 
+    @ConfigurableElement
     public double epsilonMod = 1 * Math.pow(10,-7);
 
     @Override
     public Mat processFrame(Mat input)
     {
-        Imgproc.cvtColor(input,grey, Imgproc.COLOR_RGB2GRAY);
-        Imgproc.threshold(grey, limited,127,255, Imgproc.ADAPTIVE_THRESH_MEAN_C);
+        // Filter
+        Imgproc.cvtColor(input, hsv, Imgproc.COLOR_RGB2HSV);
+        Core.inRange(hsv, new Scalar(minHue, 27, 15), new Scalar(maxHue, 100, 100), mask);
+        colourMask.release();
+        colourMask = new Mat();
+        Core.bitwise_and(input, input, colourMask, mask);
+
+        // Contour
+        Imgproc.cvtColor(colourMask, grey, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.threshold(grey, limited,127,255, Imgproc.ADAPTIVE_THRESH_GAUSSIAN_C);
 
         cnts.clear();
 
@@ -52,6 +72,7 @@ public class ContourPipeline extends OpenCvPipeline
         Imgproc.drawContours(input, approxList,-1 ,new Scalar(255,255,255),3);
 
         return input;
-
     }
 }
+
+
