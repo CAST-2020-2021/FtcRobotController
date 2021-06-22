@@ -16,7 +16,14 @@ public class ContourPipeline extends OpenCvPipeline
     // Notice this is declared as an instance variable (and re-used), not a local variable
     Mat grey = new Mat();
     Mat limited = new Mat();
+    Mat hierarchy = new Mat();
 
+    List<MatOfPoint> cnts = new ArrayList<MatOfPoint>();
+    List<MatOfPoint> approxList = new ArrayList<MatOfPoint>();
+
+    MatOfPoint approx = new MatOfPoint();
+
+    public double epsilonMod = 1 * Math.pow(10,-7);
 
     @Override
     public Mat processFrame(Mat input)
@@ -24,18 +31,18 @@ public class ContourPipeline extends OpenCvPipeline
         Imgproc.cvtColor(input,grey, Imgproc.COLOR_RGB2GRAY);
         Imgproc.threshold(grey, limited,127,255, Imgproc.ADAPTIVE_THRESH_MEAN_C);
 
-        List<MatOfPoint> cnts = new ArrayList<MatOfPoint>();
+
         Mat hierarchy = new Mat();
         Imgproc.findContours(limited, cnts, hierarchy, Imgproc.RETR_TREE,Imgproc.CHAIN_APPROX_SIMPLE);
 
-        List<MatOfPoint> approxList = new ArrayList<MatOfPoint>();
+
 
         for (MatOfPoint temp : cnts) {
             // Convert contour to MapOfPoint2f
             MatOfPoint2f c = new MatOfPoint2f(temp.toArray());
 
             // Run approxPolyDP on each
-            double epsilon = 0.1 * Imgproc.arcLength(c,true);
+            double epsilon = epsilonMod * Imgproc.arcLength(c,true);
 
             MatOfPoint2f approx = new MatOfPoint2f();
             Imgproc.approxPolyDP(c,approx,epsilon,true);

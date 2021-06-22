@@ -80,10 +80,10 @@ public class OldDrive extends OpMode {
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
 
-        leftFrontMotor = hardwareMap.get(DcMotor.class, "leftFrontMotor");
-        rightFrontMotor = hardwareMap.get(DcMotor.class, "rightFrontMotor");
-        leftBackMotor = hardwareMap.get(DcMotor.class, "leftBackMotor");
-        rightBackMotor = hardwareMap.get(DcMotor.class, "rightBackMotor");
+        leftFrontMotor = hardwareMap.get(DcMotor.class, "frontLeft");
+        rightFrontMotor = hardwareMap.get(DcMotor.class, "frontRight");
+        leftBackMotor = hardwareMap.get(DcMotor.class, "backLeft");
+        rightBackMotor = hardwareMap.get(DcMotor.class, "backRight");
         // Most robots need the motor on one side to be reversed to drive forward
         // Reverse the motor that runs backwards when connected directly to the battery
         leftFrontMotor.setDirection(DcMotor.Direction.FORWARD);
