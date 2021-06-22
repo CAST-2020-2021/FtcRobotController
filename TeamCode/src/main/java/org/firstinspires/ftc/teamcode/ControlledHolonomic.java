@@ -41,15 +41,16 @@ public class ControlledHolonomic extends OpMode {
                 gamepad1.right_bumper
         );
 
-        double shooterTiltPower = (gamepad2.left_bumper ? 1 : -gamepad2.left_trigger) * 0.5;
+        double shooterTiltPower = (gamepad2.left_bumper ? 1 : (gamepad2.right_bumper ? -1: 0)) * 0.5;
 
         shooterTiltPower = shooterTiltPower == 0 ? 0.1 : shooterTiltPower;
 
+        telemetry.addData("tiltPower", shooterTiltPower);
         shooterTilt.setPower(shooterTiltPower);
 
         // Fire up shooter
         if (gamepad2.a) {
-            shooterFire.setPower(-1);
+            shooterFire.setPower(1);
         }
         else {
             shooterFire.setPower(0);
