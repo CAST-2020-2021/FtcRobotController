@@ -28,13 +28,15 @@ public class ConfigurablePipeline {
                 field.setAccessible(true);
                 if (field.isAnnotationPresent(ConfigurableElement.class)) {
                     configurableElementsMap.addNode(field);
-                    if (field.getType() != Double.class) {
+                    Log.d(TAG, field.getType().toString());
+                    if ((field.getType() != Double.TYPE) && (field.getType() != Double.class)) {
                         throw new Exception("Configurable type not a double.");
                     }
                 }
             }
         }
     }
+
 
     public void StepForwards() {
         if (!configurable) {
@@ -61,7 +63,7 @@ public class ConfigurablePipeline {
         try {
             this.configurableElementsMap.GetHead().value.set(this.pipeline, value);
         } catch (Exception e) {
-            Log.e(TAG,(e.getMessage() != null) ? e.getMessage() : "Could not set configuration value.");
+            Log.e(TAG, (e.getMessage() != null) ? e.getMessage() : "Could not set configuration value.");
         }
 
     }
@@ -74,14 +76,16 @@ public class ConfigurablePipeline {
         try {
             return this.configurableElementsMap.GetHead().value.getDouble(this.pipeline);
         } catch (Exception e) {
-            Log.e(TAG,(e.getMessage() != null) ? e.getMessage() : "Could not get configuration value.");
+            Log.e(TAG, (e.getMessage() != null) ? e.getMessage() : "Could not get configuration value.");
         }
 
         return -1;
     }
 
     public String toString() {
-        if (!configurable){return "";}
+        if (!configurable) {
+            return "";
+        }
 
         Node<Field> currentNode = configurableElementsMap.head;
         StringBuilder output = new StringBuilder();
@@ -91,7 +95,7 @@ public class ConfigurablePipeline {
                 currentNode = currentNode.nextNode;
                 output.append(currentNode.value.getName()).append(": ").append(currentNode.value.getDouble(pipeline));
             } catch (Exception e) {
-                Log.wtf(TAG,e.getMessage());
+                Log.wtf(TAG, e.getMessage());
             }
         } while (currentNode != configurableElementsMap.head);
         output.append("(*)");

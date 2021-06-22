@@ -34,9 +34,9 @@ public class VisionDrive extends OpMode {
         try {
             configurablePipeline = new ConfigurablePipeline(new ColourFilterPipeline());
         } catch (Exception e) {
-            Log.e(TAG,(e.getMessage() != null) ? e.getMessage() : "Could not set configuration value.");
+            throw new RuntimeException((e.getMessage() != null) ? e.getMessage() : "Could not set configuration value.");
         }
-
+        telemetry.addData("pipeline", configurablePipeline.pipeline);
         camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
