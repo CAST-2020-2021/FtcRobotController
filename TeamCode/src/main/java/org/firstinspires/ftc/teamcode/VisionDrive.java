@@ -68,10 +68,10 @@ public class VisionDrive extends OpMode {
 
 
         if (gamepad2.dpad_down) {
-            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() - 0.01);
+            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() - 0.1);
         }
         if (gamepad2.dpad_up) {
-            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() + 0.01);
+            configurablePipeline.SetConfigurationValue(configurablePipeline.GetConfigurationValue() + 0.1);
         }
         if (gamepad2.dpad_left) {
             if (!dpadHold) {
