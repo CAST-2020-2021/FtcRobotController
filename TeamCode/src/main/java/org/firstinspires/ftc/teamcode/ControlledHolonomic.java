@@ -14,7 +14,8 @@ public class ControlledHolonomic extends OpMode {
     private HoloXDrive drive;
 
     private DcMotor shooterTilt;
-    private DcMotor shooterFire;
+    private DcMotor shooterFireLeft;
+    private DcMotor shooterFireRight;
 
     @Override
     public void init() {
@@ -29,7 +30,12 @@ public class ControlledHolonomic extends OpMode {
 
         shooterTilt = hardwareMap.get(DcMotor.class, "shooterTilt");
         shooterTilt.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        shooterFire = hardwareMap.get(DcMotor.class, "shooterFire");
+        shooterFireLeft = hardwareMap.get(DcMotor.class, "shooterFireLeft");
+        shooterFireLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        shooterFireRight = hardwareMap.get(DcMotor.class, "shooterFireRight");
+        shooterFireRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+
     }
 
     @Override
@@ -50,10 +56,12 @@ public class ControlledHolonomic extends OpMode {
 
         // Fire up shooter
         if (gamepad2.a) {
-            shooterFire.setPower(1);
+            shooterFireLeft.setPower(1);
+            shooterFireRight.setPower(-1);
         }
         else {
-            shooterFire.setPower(0);
+            shooterFireLeft.setPower(0);
+            shooterFireRight.setPower(0);
         }
 
 
