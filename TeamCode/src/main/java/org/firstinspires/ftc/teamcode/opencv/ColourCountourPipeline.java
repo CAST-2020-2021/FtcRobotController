@@ -21,10 +21,10 @@ public class ColourCountourPipeline extends OpenCvPipeline {
     Mat colourMask = new Mat();
 
     @ConfigurableElement
-    public double minHue = 70;
+    public double minHue = 120;
 
     @ConfigurableElement
-    public double maxHue = 70;
+    public double maxHue = 170;
 
     @ConfigurableElement
     public double minSat = 0;
